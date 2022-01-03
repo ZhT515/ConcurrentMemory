@@ -29,6 +29,24 @@ Span* CentralCache::GetOneSpan(SpanList& list, size_t size)
 	//span没有内存了，需要找pagecache;
 	Span* span = pageCache.NewSpan(SizeClass::NumMovePage(size));
 
+	//切分，挂到list
+	char* start = (char*)(span->_pageId << PAGE_SHIFT);				//起始地址
+	char* end = start + (span->_n << PAGE_SHIFT);
+	
+	while (start < end)
+	{
+		char* next = start + size;				
+		
+		//头插，size是单位大小
+		NextObj(start) = span->_list;
+		span->_list = start;
+
+		start = next;
+	}
+	span->_objsize = size;
+
+	list.PushFront(span);
+
 	return span;
 }
 
@@ -59,16 +77,27 @@ size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t n, size_t si
 }
 
 
-void* CentralCache::ReleaseListToSpans(void* start, size_t byte_size)
+void CentralCache::ReleaseListToSpans(void* start, size_t byte_size)
 {
 	size_t i = SizeClass::Index(byte_size);		//计算属于哪个
 	while (start)
 	{
 		void* next = NextObj(start);
+
 		Span* span = pageCache.MapObjectToSpan(start);			//找到位置
 
-
-
+		//把对象插入到span管理的list中
+		NextObj(start) = span->_list;
+		span->_list = start;					//单链表头插
+		span->_usecount--;
+		
+		//_usecount == 0就全回来了
+		if (span->_usecount == 0)
+		{
+			_spanLists[i].Erase(span);
+			span->_list = nullptr;
+			pageCache.ReleaseSpanToPageCache(span);
+		}
 
 		start = next;
 	}

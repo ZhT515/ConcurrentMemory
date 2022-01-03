@@ -23,10 +23,14 @@ public:
 
 	// 获取从对象到span的映射
 	Span* MapObjectToSpan(void* obj);
+
+	//释放空闲span回到Pagecache，并合并相邻的span
+	void ReleaseSpanToPageCache(Span* span);
 private:
 	SpanList _spanList[NPAGES];					//按页映射
 
 	std::map<PageID, Span*> _idSpanMap;			//ID与span对应
+	//tcmalloc 用的基数树
 };
 
 static PageCache pageCache;

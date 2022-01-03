@@ -23,7 +23,7 @@ public:
 	Span* GetOneSpan(SpanList&list, size_t size);
 
 	//将一定数量的对象释放到span中
-	void* ReleaseListToSpans(void* start, size_t byte_size);
+	void ReleaseListToSpans(void* start, size_t byte_size);
 
 private:
 	SpanList _spanLists[NFREELISTS];		//按对齐方式映射

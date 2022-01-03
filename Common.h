@@ -168,8 +168,18 @@ public:
 		_size += n;
 	}
 
-	void PopRange(void*& start, void*& end, int n)		//头删n个
+	void PopRange(void*& start, void*& end, int n)		//删n个，start-end被删除的区间
 	{
+		start = _head;
+
+		for (size_t i = 0; i < n; ++i)
+		{
+			end = _head;
+			_head = NextObj(_head);
+		}
+
+		NextObj(end) = nullptr;							//断开链接
+		_size -= n;
 
 	}
 
@@ -214,7 +224,7 @@ public:
 private:
 	void* _head = nullptr;			//push时一般为头插，所以初始化为空
 	size_t _max_size = 1;			//初始时最大长度，用于慢启动
-	size_t _size = 0;					//个数
+	size_t _size = 0;					//现有个数
 };
 
 
@@ -234,6 +244,7 @@ struct Span
 
 	void* _list = nullptr;				//大块内存切小链接起来
 	size_t _usecount = 0;				//使用技术 ==0 说明所有对象都回来了
+
 	size_t _objsize = 0;					//切除的单个对象的大小
 };
 
@@ -283,6 +294,19 @@ public:
 	bool Empty()
 	{
 		return _head->_next == _head;
+	}
+
+	void PushFront(Span* span)
+	{
+		Insert(Begin(), span);
+	}
+
+	Span* PopFront()
+	{
+		Span* span = Begin();
+		Erase(span);
+
+		return span;
 	}
 
 private:

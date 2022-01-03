@@ -15,6 +15,7 @@
 
 #include "Common.h"
 #include "ThreadCache.h"
+#include "PageCache.h"
 
 //…Í«Î
 void* ConcurrentAlloc(size_t size)		
@@ -30,7 +31,7 @@ void* ConcurrentAlloc(size_t size)
 			tls_threadcache = new ThreadCache;
 		}
 
-		cout << tls_threadcache << endl;
+		//cout << tls_threadcache << endl;
 
 		return tls_threadcache->Allocate(size);
 	}
@@ -39,16 +40,20 @@ void* ConcurrentAlloc(size_t size)
 }
 
 // Õ∑≈
-void ConcurrentFree(void* ptr, size_t size)
+void ConcurrentFree(void* ptr)
 {
-	assert(tls_threadcache);
+	Span* span = pageCache.MapObjectToSpan(ptr);		//ªÒ»°”≥…‰
+	size_t size = span->_objsize;					
 
 	if (size > MAX_BYTES)
 	{
 		// PageCache
+		pageCache.ReleaseSpanToPageCache(span);
 	}
 	else
 	{
+		assert(tls_threadcache);
+
 		tls_threadcache->Deallocate(ptr, size);
 	}
 }
