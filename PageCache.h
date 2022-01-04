@@ -15,6 +15,11 @@
 class PageCache
 {
 public:
+	static PageCache* GetInstance()
+	{
+		return &_sInst;
+	}
+	
 	//向系统申请k页内存挂到自由链表
 	void* SystemAllocPage(size_t k);
 
@@ -29,8 +34,17 @@ public:
 private:
 	SpanList _spanList[NPAGES];					//按页映射
 
-	std::map<PageID, Span*> _idSpanMap;			//ID与span对应
+	std::unordered_map<PageID, Span*> _idSpanMap;			//ID与span对应
 	//tcmalloc 用的基数树
+
+	std::recursive_mutex _mtx;
+
+private:										//单例
+	PageCache()
+	{}
+
+	PageCache(const PageCache&) = delete;
+
+	static PageCache _sInst;
 };
 
-static PageCache pageCache;

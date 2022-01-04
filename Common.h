@@ -8,18 +8,20 @@
  *
  * Last Modified: 2021年12月20日18点19分
  *
- * Content: 自由链表
+ * Content: 单测试
  *******************************************************/
 
 #pragma once
-#include<iostream>
-#include<execution>
-#include<vector>
-#include<time.h>
-#include<assert.h>
-#include<map>
+#include <iostream>
+#include <execution>
+#include <vector>
+#include <time.h>
+#include <assert.h>
+#include <map>
+#include <unordered_map>
 
-#include<thread>
+#include <thread>
+#include <mutex>
 #include <algorithm>
 
 #ifdef _WIN32
@@ -87,10 +89,42 @@ public:
 	//[1025，8*1024]		128byte对齐          56个  freelist[72,128)
 	//[8*1024+1，64*1024]	1024byte对齐         56个  freelist[128,184)
 
+	// [1,8]   +7 [8,15]    8
+	// [9, 16] +7 [16,23]   16
+	//对齐
+	static inline size_t _RoundUp(size_t bytes, size_t align)
+	{
+		return (((bytes)+align - 1) & ~(align - 1));
+	}
+
+	static inline size_t RoundUp(size_t bytes)
+	{
+		if (bytes <= 128)
+		{
+			return _RoundUp(bytes, 8);
+		}
+		else if (bytes <= 1024)
+		{
+			return _RoundUp(bytes, 16);
+		}
+		else if (bytes <= 8192)
+		{
+			return _RoundUp(bytes, 128);
+		}
+		else if (bytes <= 65536)
+		{
+			return _RoundUp(bytes, 1024);
+		}
+		else
+		{
+			return _RoundUp(bytes, 1 << PAGE_SHIFT);
+		}
+	}
+
 	//计算对应的哈希，参考((size + (2 ^ 3 - 1)) >> 3) - 1;
 	static inline size_t  _Index(size_t bytes, size_t align_shift)			
 	{
-		return ((bytes + (1 << align_shift - 1) >> align_shift)) - 1;
+		return ((bytes + (1 << align_shift) - 1) >> align_shift) - 1;
 	}
 
 	static inline size_t  Index(size_t bytes)
@@ -171,11 +205,13 @@ public:
 	void PopRange(void*& start, void*& end, int n)		//删n个，start-end被删除的区间
 	{
 		start = _head;
-
+			
 		for (size_t i = 0; i < n; ++i)
 		{
+
 			end = _head;
 			_head = NextObj(_head);
+
 		}
 
 		NextObj(end) = nullptr;							//断开链接
@@ -309,8 +345,21 @@ public:
 		return span;
 	}
 
+	void Lock()
+	{
+		_mtx.lock();
+	}
+
+	void UnLock()
+	{
+		_mtx.unlock();
+	}
+
 private:
 	Span* _head;
+
+public:
+	std::mutex _mtx;				//锁
 };
 
 //向系统申请内存

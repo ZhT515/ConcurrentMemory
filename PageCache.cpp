@@ -11,6 +11,8 @@
 
 #include "PageCache.h"
 
+PageCache PageCache::_sInst;			//单例
+
  //向系统申请k页内存挂到自由链表
 void* PageCache::SystemAllocPage(size_t k)
 {
@@ -20,6 +22,7 @@ void* PageCache::SystemAllocPage(size_t k)
 // 申请一个新的span
 Span* PageCache::NewSpan(size_t k)
 {
+	std::lock_guard<std::recursive_mutex> lock(_mtx);
 	//大于NPAGES直接向系统申请
 	if (k >= NPAGES)
 	{
@@ -106,11 +109,14 @@ Span* PageCache::NewSpan(size_t k)
 
 Span* PageCache::MapObjectToSpan(void* obj) 
 {
+	std::lock_guard<std::recursive_mutex> lock(_mtx);
+
 	PageID id = (ADDRES_INT)obj >> PAGE_SHIFT;			//确定ID
 
 	auto ret = _idSpanMap.find(id);						//查找
 	if (ret != _idSpanMap.end())						//合法 返回
 	{
+
 		return ret->second;
 	}
 	else

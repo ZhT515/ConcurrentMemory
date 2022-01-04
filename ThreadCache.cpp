@@ -21,7 +21,7 @@ void* ThreadCache::FetchFromCentralCache(size_t i, size_t size)
 	//去中心缓存取batchNum个对象
 	void* strat = nullptr;
 	void* end = nullptr;
-	size_t actualNum = centralCache.FetchRangeObj(strat, end, batchNum, size);
+	size_t actualNum = CentralCache::GetInstance()->FetchRangeObj(strat, end, batchNum, SizeClass::RoundUp(size));
 	assert(actualNum > 0);		//是否成功
 
 	if (actualNum > 1)		//多于一个时，将多的插入自由链表
@@ -71,7 +71,8 @@ void ThreadCache::ListTooLong(FreeList& list, size_t size)
 	size_t batchNum = list.MaxSize();			//释放最大
 	void* start = nullptr;
 	void* end = nullptr;
+
 	list.PopRange(start, end, batchNum);		
 
-	centralCache.ReleaseListToSpans(start, size);
+	CentralCache::GetInstance()->ReleaseListToSpans(start, size);
 }
