@@ -1,10 +1,21 @@
+/*******************************************************
+ * This file is part of ConcurrentMemory.
+ *
+ * Licensed under the GNU General Public License v3.0;
+ * you may not use this file except in compliance with the License.
+ *
+ * Author: Zhang Tong (zhangtongcpp@163.com)
+ *
+ * Last Modified: 2021年12月23日14点48分
+ *
+ * Content:对外接口
+ *******************************************************/
 #pragma once
 
 #include "Common.h"
 #include "ThreadCache.h"
 #include "PageCache.h"
 
-//void* tcmalloc(size_t size)
 static void* ConcurrentAlloc(size_t size)
 {
 	try

@@ -6,7 +6,9 @@
  *
  * Author: Zhang Tong (zhangtongcpp@163.com)
  * 
- * Last Modified: 2021年12月20日18点19分
+ * Last Modified: 2021年12月17日11点14分
+ * 
+ * Content：线程缓存：解决多线程下高并发运行场景线程之间的锁竞争问题；
  *******************************************************/
 
 #include "ThreadCache.h"

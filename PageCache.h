@@ -6,7 +6,9 @@
  *
  * Author: Zhang Tong (zhangtongcpp@163.com)
  *
- * Last Modified: 2021年12月20日18点19分
+ * Last Modified: 2021年12月28日14点52分
+ * 
+ * Content：页缓存：以页为单位申请内存，为中心控制缓存提供大块内存。
  *******************************************************/
 
 #pragma once

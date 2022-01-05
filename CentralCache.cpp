@@ -7,6 +7,9 @@
  * Author: Zhang Tong (zhangtongcpp@163.com)
  *
  * Last Modified: 2021年12月20日18点19分
+ * 
+ * Content:中心控制缓存：负责大块内存切割分配给线程缓存以及
+ 回收线程缓存中多余的内存进行合并归还给页缓存；
  *******************************************************/
 
 #include "CentralCache.h"

@@ -1,3 +1,16 @@
+/*******************************************************
+ * This file is part of ConcurrentMemory.
+ *
+ * Licensed under the GNU General Public License v3.0;
+ * you may not use this file except in compliance with the License.
+ *
+ * Author: Zhang Tong (zhangtongcpp@163.com)
+ *
+ * Last Modified: 2021年12月20日18点19分
+ *
+ * Content：单元测试
+ *******************************************************/
+
 #include "ConcurrentAlloc.h"
 
 void func1()
