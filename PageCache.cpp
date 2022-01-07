@@ -30,7 +30,7 @@ Span* PageCache::NewSpan(size_t k)
 	{
 		void* ptr = SystemAllocPage(k);
 		Span* span = new Span;
-		span->_pageId = (size_t)ptr >> 12;			//添加页号
+		span->_pageId = (ADDRES_INT)ptr >> PAGE_SHIFT;			//添加页号
 		span->_n = k;
 
 		_idSpanMap[span->_pageId] = span;
@@ -44,7 +44,7 @@ Span* PageCache::NewSpan(size_t k)
 		return _spanList[k].PopFront();
 	}
 
-	for (size_t i = k + 1; i < NPAGES; i++)		//寻找大的并切小
+	for (size_t i = k + 1; i < NPAGES; ++i)		//寻找大的并切小
 	{
 		//将大的切小，K返回，i-k挂在自由链表上
 		if (!_spanList[i].Empty())		//找到
@@ -76,7 +76,7 @@ Span* PageCache::NewSpan(size_t k)
 			//改变切出来span的页号和span的映射关系
 			for (PageID i = 0; i < k; ++i)
 			{
-				_idSpanMap[splitSpan->_pageId] = splitSpan;
+				_idSpanMap[splitSpan->_pageId + i] = splitSpan;
 			}
 
 			span->_n -= k;											//数量-k
@@ -111,11 +111,17 @@ Span* PageCache::NewSpan(size_t k)
 
 Span* PageCache::MapObjectToSpan(void* obj) 
 {
-	std::lock_guard<std::recursive_mutex> lock(_mtx);
+	//std::lock_guard<std::recursive_mutex> lock(_mtx);
 
 	PageID id = (ADDRES_INT)obj >> PAGE_SHIFT;			//确定ID
 
 	auto ret = _idSpanMap.find(id);						//查找
+
+	//if (ret->second->_objsize == 0)
+	//{
+	//	cout << "1";
+	//}
+
 	if (ret != _idSpanMap.end())						//合法 返回
 	{
 
@@ -144,6 +150,8 @@ void PageCache::ReleaseSpanToPageCache(Span* span)
 		return;
 	}
 
+
+	std::lock_guard<std::recursive_mutex> lock(_mtx);
 	//检查前后空闲span页，进行合并，解决内存碎片问题
 
 	//向前合并
@@ -167,6 +175,12 @@ void PageCache::ReleaseSpanToPageCache(Span* span)
 		}
 
 		//开始合并
+		// // 超过128页，不需要合并了
+		if (preSpan->_n + span->_n >= NPAGES)
+		{
+			break;
+		}
+
 		//先从span链解下
 		_spanList[preSpan->_n].Erase(preSpan);
 
@@ -203,6 +217,10 @@ void PageCache::ReleaseSpanToPageCache(Span* span)
 		}
 
 		//开始合并
+		if (nextSpan->_n + span->_n >= NPAGES)
+		{
+			break;
+		}
 		//先从span链解下
 		_spanList[nextSpan->_n].Erase(nextSpan);
 

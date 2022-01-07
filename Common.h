@@ -119,6 +119,8 @@ public:
 		{
 			return _RoundUp(bytes, 1 << PAGE_SHIFT);
 		}
+
+		return -1;
 	}
 
 	//计算对应的哈希，参考((size + (2 ^ 3 - 1)) >> 3) - 1;
@@ -148,7 +150,7 @@ public:
 		}
 		else if (bytes <= 65536)
 		{
-			return _Index(bytes - 8192, 9) + group_arrary[0] + group_arrary[1] + group_arrary[2];
+			return _Index(bytes - 8192, 10) + group_arrary[0] + group_arrary[1] + group_arrary[2];
 		}
 
 		assert(false);			//到此处说明程序出错
@@ -180,7 +182,7 @@ public:
 	static size_t NumMovePage(size_t size)
 	{
 		size_t num = NumMoveSize(size);		
-		size_t npage = size * num;					//确定字节数
+		size_t npage = num * size;					//确定字节数
 
 		npage >>= 12;								//确定页数
 		if (npage == 0)
@@ -206,7 +208,7 @@ public:
 	{
 		start = _head;
 			
-		for (size_t i = 0; i < n; ++i)
+		for (int i = 0; i < n; ++i)
 		{
 
 			end = _head;
@@ -257,7 +259,7 @@ public:
 		return _size;
 	}
 
-private:
+//private:
 	void* _head = nullptr;			//push时一般为头插，所以初始化为空
 	size_t _max_size = 1;			//初始时最大长度，用于慢启动
 	size_t _size = 0;					//现有个数
@@ -299,11 +301,11 @@ public:
 	{
 		Span* prev = cur->_prev;
 
-		cur->_prev = newspan;
 		prev->_next = newspan;
+		newspan->_prev = prev;
 
 		newspan->_next = cur;
-		newspan->_prev = prev;
+		cur->_prev = newspan;
 	}
 
 	void Erase(Span* cur)

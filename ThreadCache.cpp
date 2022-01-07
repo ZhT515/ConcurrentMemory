@@ -52,8 +52,6 @@ void* ThreadCache::Allocate(size_t size)
 	{
 		return FetchFromCentralCache(i, size);
 	}
-
-	return nullptr;
 }
 
 void ThreadCache::Deallocate(void* ptr, size_t size)
@@ -62,8 +60,9 @@ void ThreadCache::Deallocate(void* ptr, size_t size)
 	_freeLists[i].Push(ptr);
 
 	//当前长度大于最大长度就需要释放
-	if (_freeLists[i].Size() > _freeLists[i].MaxSize())
+	if (_freeLists[i].Size() >= _freeLists[i].MaxSize())
 	{
+
 		ListTooLong(_freeLists[i], size);
 	}
 }

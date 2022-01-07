@@ -97,7 +97,7 @@ void CentralCache::ReleaseListToSpans(void* start, size_t byte_size)
 		//把对象插入到span管理的list中
 		NextObj(start) = span->_list;
 		span->_list = start;					//单链表头插
-		span->_usecount--;
+ 		span->_usecount--;
 		
 		//_usecount == 0就全回来了
 		if (span->_usecount == 0)

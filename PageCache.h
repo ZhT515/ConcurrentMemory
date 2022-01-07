@@ -13,6 +13,7 @@
 
 #pragma once
 #include "Common.h"
+//#include "PageMap.h"
 
 class PageCache
 {
@@ -38,6 +39,7 @@ private:
 
 	std::unordered_map<PageID, Span*> _idSpanMap;			//ID与span对应
 	//tcmalloc 用的基数树
+	//TCMalloc_PageMap2<32 - PAGE_SHIFT> _idSpanMap;
 
 	std::recursive_mutex _mtx;
 

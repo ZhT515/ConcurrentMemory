@@ -29,7 +29,7 @@ public:
 	//释放内存时，链表过长时，回收内存回到中心缓存
 	void ListTooLong(FreeList& list, size_t size);
 private:
-	FreeList _freeLists[16];
+	FreeList _freeLists[NFREELISTS];
 };
 
 //通过静态TLS进行线程本地化，每个都对应一个自己的threadcache这样可以避免上锁
